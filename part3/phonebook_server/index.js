@@ -1,7 +1,10 @@
+require('dotenv').config()
 const express = require('express')
 const morgan = require('morgan')
 const app = express()
 const cors = require('cors')
+const mongoose = require('mongoose')
+const Person = require('./models/person')
 
 app.use(cors())
 app.use(express.json())
@@ -36,62 +39,100 @@ let contacts = [
     }
 ]
 
+app.get('/', (request, response) => {
+  response.send('<h1>Hello World!</h1>')
+})
+
 app.get('/api/persons', (request, response) => {
-  response.json(contacts)
+  Person.find({}).then( contacts => {
+    response.json(contacts)
+  })
 })
 
 app.get('/info', (request, response) => {
     const now = new Date()
-  response.send(`<p> PhoneBook has info for ${contacts.length} people </p>
-                <p> ${now} </p>`)
+    Person.find({}).then( contacts => {
+      response.send(`<p> PhoneBook has info for ${contacts.length} people </p> <p> ${now} </p>`)
+  }) 
 })
 
-app.get('/api/persons/:id', (request, response) => {
-  const id = Number(request.params.id)
-  const contact = contacts.find(contact => contact.id === id)
-  if (contact) {
-    response.json(contact)
+app.get('/api/persons/:id', (request, response, next) => {
+
+  Person.findById(request.params.id).then(contact => {
+    if (contact) {
+      response.json(contact)
+    } else {
+      response.status(404).end()
+    } 
+  })
+  .catch( error => next(error))
+})
+
+app.post('/api/persons', (request, response, next) => {
+  const body = request.body
+  console.log(body)
+  if (!body.name || !body.number) {
+    error = { name: 'MissingInfo' }
+    next(error)
   } else {
-    response.statusMessage = "Current contact does not exists";
-    response.status(404).end()
+      const newContact = new Person ({
+      name: body.name,
+      number: body.number,
+      })
+
+      newContact.save().then(savedContact => {
+        response.json(savedContact)
+      })
+      .catch (error => next(error))
   }
+})
+
+
+app.put('/api/persons/:id', (request, response, next) => {
+  const { name, number } = request.body
+
+  Person.findByIdAndUpdate(request.params.id, {name, number}, 
+    { new: true, runValidators: true, context: 'query' })
+    .then(updatedContact => {
+      response.json(updatedContact)
+    })
+    .catch(error => next(error))
 })
 
 app.delete('/api/persons/:id', (request, response) => {
-  const id = Number(request.params.id)
-  contacts = contacts.filter(contact => contact.id !== id)
-
-  response.status(204).end()
+  Person.findByIdAndDelete(request.params.id)
+  .then(result => {
+    response.status(204).end()
+  })
+  .catch (error => next(error))
 })
 
-app.post('/api/persons', (request, response) => {
-  const body = request.body
+const unknownEndpoint = (request, response) => {
+  response.status(404).send({ error: 'unknown endpoint' })
+}
 
-  if (!body.name || !body.number) {
-    return response.status(400).json({ 
-      error: 'Name or number missing' 
-    })
+app.use(unknownEndpoint)
+
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message)
+  console.log(error.name)
+
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'Malformatted id' })
+  }
+  if (error.name === 'MissingInfo') {
+    return response.status(400).send({ error: 'Name or number missing'})
+  }
+  if (error.name === 'ValidationError') {
+    return response.status(400).json({ error: error.message })
   }
 
-  if (contacts.find(contact => contact.name.toLowerCase() === body.name.toLowerCase())) {
-     return response.status(409).json({ 
-      error: 'The name already exists in the phoneBook' 
-    })
-  }
+  next(error)
+}
 
-  const id = Math.floor(Math.random() * 1000000)
-  const newContact = {
-    name: body.name,
-    number: body.number || '',
-    id: id,
-  }
+app.use(errorHandler)
 
-  contacts = contacts.concat(newContact)
-
-  response.json(newContact)
-})
-
-const PORT = process.env.PORT || 3001
+const PORT = process.env.PORT
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
