@@ -3,7 +3,6 @@ const express = require('express')
 const morgan = require('morgan')
 const app = express()
 const cors = require('cors')
-const mongoose = require('mongoose')
 const Person = require('./models/person')
 
 app.use(cors())
@@ -15,29 +14,6 @@ morgan.token('body', (request) => {
 })
 
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
-
-let contacts = [
-    { 
-      "id": 1,
-      "name": "Arto Hellas", 
-      "number": "040-123456"
-    },
-    { 
-      "id": 2,
-      "name": "Ada Lovelace", 
-      "number": "39-44-5323523"
-    },
-    { 
-      "id": 3,
-      "name": "Dan Abramov", 
-      "number": "12-43-234345"
-    },
-    { 
-      "id": 4,
-      "name": "Mary Poppendieck", 
-      "number": "39-23-6423122"
-    }
-]
 
 app.get('/', (request, response) => {
   response.send('<h1>Hello World!</h1>')
@@ -53,7 +29,7 @@ app.get('/info', (request, response) => {
     const now = new Date()
     Person.find({}).then( contacts => {
       response.send(`<p> PhoneBook has info for ${contacts.length} people </p> <p> ${now} </p>`)
-  }) 
+  })
 })
 
 app.get('/api/persons/:id', (request, response, next) => {
@@ -63,7 +39,7 @@ app.get('/api/persons/:id', (request, response, next) => {
       response.json(contact)
     } else {
       response.status(404).end()
-    } 
+    }
   })
   .catch( error => next(error))
 })
@@ -72,7 +48,7 @@ app.post('/api/persons', (request, response, next) => {
   const body = request.body
   console.log(body)
   if (!body.name || !body.number) {
-    error = { name: 'MissingInfo' }
+    const error = { name: 'MissingInfo' }
     next(error)
   } else {
       const newContact = new Person ({
@@ -91,7 +67,7 @@ app.post('/api/persons', (request, response, next) => {
 app.put('/api/persons/:id', (request, response, next) => {
   const { name, number } = request.body
 
-  Person.findByIdAndUpdate(request.params.id, {name, number}, 
+  Person.findByIdAndUpdate(request.params.id, { name, number },
     { new: true, runValidators: true, context: 'query' })
     .then(updatedContact => {
       response.json(updatedContact)
@@ -99,7 +75,7 @@ app.put('/api/persons/:id', (request, response, next) => {
     .catch(error => next(error))
 })
 
-app.delete('/api/persons/:id', (request, response) => {
+app.delete('/api/persons/:id', (request, response, next) => {
   Person.findByIdAndDelete(request.params.id)
   .then(result => {
     response.status(204).end()
@@ -121,7 +97,7 @@ const errorHandler = (error, request, response, next) => {
     return response.status(400).send({ error: 'Malformatted id' })
   }
   if (error.name === 'MissingInfo') {
-    return response.status(400).send({ error: 'Name or number missing'})
+    return response.status(400).send({ error: 'Name or number missing' })
   }
   if (error.name === 'ValidationError') {
     return response.status(400).json({ error: error.message })

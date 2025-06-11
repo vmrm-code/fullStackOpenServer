@@ -27,7 +27,7 @@ const personSchema = new mongoose.Schema({
       },
       message: props => `${props.value} invalid format, it must have this XX-XXXXXXX or this XXX-XXXXXXXX format`
     }
-  } 
+  }
 })
 
 personSchema.set('toJSON', {
@@ -37,29 +37,5 @@ personSchema.set('toJSON', {
     delete returnedObject.__v
   }
 })
-
-/*if (process.argv.length === 5) {
-    //Create a new contact
-    const contact = new Person({
-    name: String(process.argv[3]),
-    number: String(process.argv[4]),
-    })
-
-    contact.save().then(result => {
-    console.log(`contact ${contact.name} with ${contact.number} saved to the phoneBook!`)
-    mongoose.connection.close()
-    })
-}
-
-if (process.argv.length === 3) {
-
-    Person.find({}).then(result => {
-        console.log('Phonebook:')
-        result.forEach(contact => {
-        console.log(contact.name + ' ' + contact.number)
-    })
-    mongoose.connection.close()
-    })
-}*/
 
 module.exports = mongoose.model('Person', personSchema)
