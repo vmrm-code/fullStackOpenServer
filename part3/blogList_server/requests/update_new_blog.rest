@@ -1,0 +1,9 @@
+PUT http://localhost:3003/api/blogs/68598156c5f9d21e0b67542d
+Content-Type: application/json
+
+{
+    "title" : "List of interesting blogs updated",
+    "author ": "Altair Diz",
+    "url" : "https://www.veryamazingblog.com",
+    "likes" : 21
+}
