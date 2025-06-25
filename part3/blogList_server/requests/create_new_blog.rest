@@ -1,0 +1,10 @@
+POST http://localhost:3003/api/blogs
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im5vcm1hbFVzZXIiLCJpZCI6IjY4NWIwMjlkYjE1MmUzM2JkMjM2ZWVkZSIsImlhdCI6MTc1MDc5NDkzNH0.IUPfZxv-EiajjHShB1z4rkEnjS4MLTxZqY3FCoyHNGg
+
+{
+    "title" : "List of boring blogs",
+    "author ": "Jason Doez",
+    "url" : "https://www.veryamazingblog.com",
+    "likes" : 1
+}
