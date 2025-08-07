@@ -28,6 +28,8 @@ blogsRouter.post('/', middleware.userExtractor, async (request, response) => {
 
 blogsRouter.delete('/:id', async (request, response) => {
   const decodedToken = jwt.verify(request.token, process.env.SECRET)
+  console.log(decodedToken.id)
+  console.log(request.token)
    if (!decodedToken.id || !request.token) {
     return response.status(401).json({ error: 'token invalid or missing' })
   }
