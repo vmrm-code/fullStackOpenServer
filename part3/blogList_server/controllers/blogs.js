@@ -48,12 +48,27 @@ blogsRouter.put('/:id', async (request, response) => {
     title: body.title,
     author: body.author,
     url: body.url,
-    likes: body.likes
+    likes: body.likes,
+    comments : body.comments
   }
 
-  await Blog.findByIdAndUpdate(request.params.id, blog, { new: true })
-  response.json(blog)
+  const updatedBlog = await Blog.findByIdAndUpdate(request.params.id, blog, { new: true }).populate('user', { username: 1, name: 1 })
+  response.json(updatedBlog)
 })
+
+blogsRouter.post('/:id/comments', async (request, response) => {
+  const blog = await Blog.findById(request.params.id)
+
+  if (!blog) {
+    return response.status(404).json({ error: 'Blog not found' })
+  }
+
+  const { comment } = request.body
+  blog.comments = blog.comments.concat(comment)
+  const updatedBlog = await blog.save()
+  response.json(updatedBlog)
+})
+
 
 
 module.exports = blogsRouter

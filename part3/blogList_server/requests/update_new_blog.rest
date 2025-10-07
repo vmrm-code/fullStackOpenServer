@@ -5,5 +5,9 @@ Content-Type: application/json
     "title" : "List of interesting blogs updated",
     "author ": "Altair Diz",
     "url" : "https://www.veryamazingblog.com",
-    "likes" : 21
+    "likes" : 21,
+    "comments" : [
+        "Nice blog",
+        "A fantastic blog"
+    ]
 }
